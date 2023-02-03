@@ -35,7 +35,7 @@ fi
 
 cd uyuni-docs
 make configure-${PRODUCT}
-make all-${PRODUCT}
+make ${COMMAND}
 
 if [ -d /tmp/uyuni-docs ]; then
   cp -r ~/uyuni-docs/build /tmp/uyuni-docs
