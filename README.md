@@ -24,7 +24,7 @@ or
 
 ## For image maintainers
 
-For publishing the image, you will need a [Docker Hub](https://hub.docker.com/), and then talk to [Julio González Gil](https://build.opensuse.org/users/juliogonzalezgil) to get added as maintainer at the Docker Hub.
+For publishing the image, you will need a [Docker Hub](https://hub.docker.com/) account, and then talk to [Julio González Gil](https://build.opensuse.org/users/juliogonzalezgil) to get added as maintainer at the Docker Hub.
 
 We plan to move the images to [GitHub packages](https://docs.github.com/en/actions/publishing-packages/publishing-docker-images#publishing-images-to-github-packages) in the future.
 
