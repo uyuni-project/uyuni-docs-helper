@@ -1,0 +1,120 @@
+#!/bin/bash
+
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <https://www.gnu.org/licenses/>.
+
+# Language (force it so getopt messages are always in english, as the script)
+LANG=en_EN
+
+# Get script name
+SCRIPT=$(basename ${0})
+
+# By default, do not serve the doc using HTTP
+SERVE=0
+
+# Image
+IMAGE='docker.io/juliogonzalez/uyuni-docs'
+
+print_info() {
+  echo -e "\033[1;36m[INFO] ${1}\033[0m"
+}
+
+print_error() {
+  echo -e "\033[1;31m[ERROR] ${1}\033[0m"
+}
+
+print_ok() {
+  echo -e "\033[1;32m[INFO] ${1}\033[0m"
+}
+
+print_incorrect_syntax() {
+  print_error "Incorrect syntax. Use ${SCRIPT} -h for help"
+}
+
+print_help() {
+  echo ""
+  echo "Build the Uyuni doc using a container and (optionally) serve it for verification via HTTP"
+  echo ""
+  echo "Syntax: "
+  echo ""
+  echo "${SCRIPT} <ARGUMENTS>"
+  echo ""
+  echo "Mandatory arguments:"
+  echo ""
+  echo "--product=<uyuni|suma>   Build the documentation for either Uyuni or SUSE Manager"
+  echo "--command=<make command> Use the desired command to build html/pdf, html&pdf, etc..."
+  echo "                         for example: all-uyuni"
+  echo ""
+  echo "Optional arguments:"
+  echo "--serve                  Start a HTTP server at the end of the build so the"
+  echo "                         documentation can be inspected (disabled by default)"
+  echo "--gitrepo=<REPOSITORY>   A path to a HTTP git repository where the code for the"
+  echo "                         documentation is (https://github.com/uyuni-project/uyuni-docs.git"
+  echo "                         by default)"
+  echo "--gitref=<REFERENCE>     A git branch (master by default)"
+  echo "--localclone=<GIT_CLONE> A path to a local clone of the git repository that will be"
+  echo "                         used for building, and where the output of the built will"
+  echo "                         be placed. If present, then --gitrepo and --gitref are ignored"
+}
+
+# read the options
+ARGS=$(getopt -o h --long help,gitrepo:,gitref:,localclone:,product:,command:,serve -n "${SCRIPT}" -- "$@")
+if [ $? -ne 0 ];
+then
+  print_incorrect_syntax
+  exit 1
+fi
+eval set -- "${ARGS}"
+
+# extract options and their arguments into variables
+while true ; do
+  case "${1}" in
+    -h|--help)     print_help; exit 1;;
+    --gitrepo)     GITREPO="${2}"; shift 2;;
+    --gitref)      GITREF="${2}"; shift 2;;
+    --localclone)  LOCALCLONE="${2}"; shift 2;;
+    --product)     PRODUCT="${2}"; shift 2;;
+    --command)     COMMAND="${2}"; shift 2;;
+    --serve)       SERVE=1; shift 1;;
+    --)            shift ; break ;;
+    *)             print_incorrect_syntax; exit 1;;
+  esac
+done
+
+if [ -z ${PRODUCT} -o -z ${COMMAND} ]; then
+  print_incorrect_syntax
+  exit 1
+fi
+
+if [ -z ${LOCALCLONE} ]; then
+  if [ -z ${GITREPO} -o -z ${GITREF} ]; then
+      print_incorrect_syntax
+      exit 1
+  fi
+elif [ ! -d ${LOCALCLONE} ]; then
+    print_error "${LOCALCLONE} is not a directory or does not exist"
+fi
+
+if [ -z ${LOCALCLONE} ]; then
+  SOURCE="-e GITREPO=${GITREPO} -e GITREF=${GITREF}"
+else
+  SOURCE="-v ${LOCALCLONE}:/tmp/uyuni-docs --userns=keep-id"
+fi
+
+print_info "Pulling the latest contaimer image..."
+podman pull ${IMAGE}
+if [ ${SERVE} -eq 1 ]; then
+ print_info "The documentation will be served via HTTP. To stop the container when you are done, use CTRL+C"
+fi
+print_info "Bulding the doc..."
+podman run -ti --rm ${SOURCE} -e PRODUCT=${PRODUCT} -e COMMAND=${COMMAND} -e SERVE=${SERVE} -p 8000:8000 ${IMAGE}
