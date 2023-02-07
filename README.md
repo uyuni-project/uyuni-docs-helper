@@ -8,8 +8,11 @@ This a result of [SUSE's Hack Week 22](https://hackweek.opensuse.org/22/projects
 
 # Repository structure
 
-- `image` directory: Contains the Dockerfile, the `startup.sh` script for the container, and the `build-and-publish` helper (that can be used to build and publish the container after changing whatever is needed on the other two files)
+## For everyone
 - `uyuni-doc-helper`: The bash script that allows any contributor to build, inspect the outputs of the build procedure via HTTP and even get outputs if building from a git local clone.
+
+## For image maintainers
+- `image` directory: Contains the Dockerfile, the `startup.sh` script for the container, and the `build-and-publish` helper (that can be used to build and publish the container after changing whatever is needed on the other two files, passing arguments to the build, such as `--no-cache` is allowed).
 
 # Requirements
 
