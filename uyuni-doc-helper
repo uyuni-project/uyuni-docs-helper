@@ -69,7 +69,8 @@ print_help() {
   echo "                          If not specified at all, the default value will be"
   echo "                          https://github.com/uyuni-project/uyuni-docs.git"
   echo "-r|--gitref <REFERENCE>   A git branch (master by default)"
-  echo "-o|--output <PATH>        A patch to store the output of the build. Optional"
+  echo "-o|--output <PATH>        A patch to store the output of the build. A directory 'build' will"
+  echo "                          be created inside. Optional"
   echo ""
   echo "Local Git repository:"
   echo "-l|--localclone <GIT_CLONE> A path to a local git repository. The output of the build will"
@@ -120,9 +121,14 @@ if [ -z ${LOCALCLONE} ]; then
   fi
   SOURCE="-e GITREPO=${GITREPO} -e GITREF=${GITREF}"
   if [ ! -z ${OUTPUT} ]; then
+    if [ ! -d ${OUTPUT} ]; then
+      print_error "${OUTPUT} is not a directory or does not exist"
+      exit 2
+    else
       SOURCE="${SOURCE} -v ${OUTPUT}:/tmp/output --userns=keep-id"
       print_info "Output will be stored at ${OUTPUT}/build"
       OUTDIR="${OUTPUT}/build"
+    fi
   fi
 else
   if [ ! -z ${OUTPUT} ]; then
@@ -137,7 +143,7 @@ else
   else
     SOURCE="-v ${LOCALCLONE}:/tmp/uyuni-docs --userns=keep-id"
     print_info "Output will be stored at ${LOCALCLONE}/build"
-   OUTDIR="${LOCALCLONE}/build"
+    OUTDIR="${LOCALCLONE}/build"
   fi
 fi
 
