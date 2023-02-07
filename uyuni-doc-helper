@@ -106,8 +106,24 @@ while true ; do
   esac
 done
 
-# Product are command are mandatory
-if [ -z ${PRODUCT} ] || [ -z ${COMMAND} ]; then
+# Command is mandatory
+if [ -z ${COMMAND} ]; then
+  print_incorrect_syntax
+fi
+
+# Print a special error for the help command
+if [ "${COMMAND}" == "help" ]; then
+  if [ -z ${LOCALCLONE} ] && [ -z ${GITREPO} ]; then
+    print_error "A source (a remote or local git repository) is needed for this."
+    print_incorrect_syntax
+  # Define a default product, if none is available, so we can show the help
+  elif [ -z ${PRODUCT} ]; then
+    PRODUCT='suma'
+  fi
+fi
+
+# Product is mandatory
+if [ -z ${PRODUCT} ]; then
   print_incorrect_syntax
 fi
 
@@ -127,7 +143,9 @@ if [ -z ${LOCALCLONE} ]; then
       exit 2
     else
       SOURCE="${SOURCE} -v ${OUTPUT}:/tmp/output --userns=keep-id"
-      print_info "Output will be stored at ${OUTPUT}/build"
+      if [ "${COMMAND}" != "help" ]; then
+        print_info "Output will be stored at ${OUTPUT}/build"
+      fi
       OUTDIR="${OUTPUT}/build"
     fi
   fi
@@ -143,7 +161,9 @@ else
     exit 2
   else
     SOURCE="-v ${LOCALCLONE}:/tmp/uyuni-docs --userns=keep-id"
-    print_info "Output will be stored at ${LOCALCLONE}/build"
+    if [ "${COMMAND}" != "help" ]; then
+      print_info "Output will be stored at ${LOCALCLONE}/build"
+    fi
     OUTDIR="${LOCALCLONE}/build"
   fi
 fi
@@ -159,14 +179,18 @@ if [ -z ${LOCALCLONE} ]; then
 
 print_info "Pulling the latest contaimer image..."
 podman pull ${IMAGE}
-if [ ${SERVE} -eq 1 ]; then
+if [ ${SERVE} -eq 1 ] && [ "${COMMAND}" != "help" ]; then
  print_info "The documentation will be served via HTTP. To stop the container when you are done, use CTRL+C"
 fi
-print_info "Bulding the doc..."
+if [ "${COMMAND}" == "help" ]; then
+  print_info "Showing the help..."
+else
+  print_info "Bulding the doc..."
+fi
 podman run -ti --rm ${SOURCE} -e PRODUCT=${PRODUCT} -e COMMAND=${COMMAND} -e SERVE=${SERVE} -p 8000:8000 ${IMAGE}
 RET=${?}
 
-if [ ! -z ${OUTDIR} ]; then
+if [ ! -z ${OUTDIR} ] && [ "${COMMAND}" != "help" ]; then
     print_info "You can find find the build output at ${OUTDIR}"
 fi
 
