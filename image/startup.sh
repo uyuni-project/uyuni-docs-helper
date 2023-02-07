@@ -41,6 +41,9 @@ cd uyuni-docs
 make configure-${PRODUCT}
 make ${COMMAND}
 RET=${?}
+if [ "${COMMAND}" == "help" ]; then
+  exit ${?}
+fi
 
 if [ -d /tmp/uyuni-docs ]; then
   cp -r ~/uyuni-docs/build /tmp/uyuni-docs
