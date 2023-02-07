@@ -55,7 +55,8 @@ print_help() {
   echo "-p|--product <uyuni|suma>   Build the documentation for either Uyuni or SUSE Manager"
   echo "-c|--command <make command> Use the desired command to build html/pdf, html&pdf, etc..."
   echo "                            for example: 'all-uyuni'. You can use 'help' to list all"
-  echo "                            possible commands"
+  echo "                            possible commands. Be aware you still need to specify"
+  echo "                            one source for this to work"
   echo ""
   echo "${SCRIPT} can build documentation from two sources. Different parameters apply for each case"
   echo ""
@@ -106,7 +107,7 @@ while true ; do
 done
 
 # Product are command are mandatory
-if [ -z ${PRODUCT} -o -z ${COMMAND} ]; then
+if [ -z ${PRODUCT} ] || [ -z ${COMMAND} ]; then
   print_incorrect_syntax
 fi
 
