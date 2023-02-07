@@ -33,20 +33,34 @@ else
   git clone -b ${GITREF} --depth 1 ${GITREPO} uyuni-docs
 fi
 
+if [ -d /tmp/output ]; then
+  rm -rf /tmp/output/build
+fi
+
 cd uyuni-docs
 make configure-${PRODUCT}
 make ${COMMAND}
+RET=${?}
+if [ "${COMMAND}" == "help" ]; then
+  exit ${?}
+fi
 
 if [ -d /tmp/uyuni-docs ]; then
   cp -r ~/uyuni-docs/build /tmp/uyuni-docs
 fi
 
+if [ -d /tmp/output ]; then
+  cp -r ~/uyuni-docs/build /tmp/output
+fi
+
 if [ "${SERVE}" == "1" ]; then
   echo "INFO: Serving the doc on port 8000 on the container"
   echo "INFO: To access the doc from outside the container, check its mapping"
-  echo "INFO: Most likely you can access http://localhost:8000/build/en to check"
+  echo "INFO: Most likely you can access http://localhost:8000/build/ to check"
   echo "      the rendered documentation, or http://localhost:8000 to inspect"
   echo "      everything"
   echo "INFO: Remember to use CTRL+C to stop the container, when you are done"
   python3 -m http.server
 fi
+
+exit ${RET}

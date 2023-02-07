@@ -18,7 +18,7 @@ RUN groupadd ${REGULARUSER} && \
 
 # Base requirements
 RUN zypper -q -n ref && \
-    zypper -q -n in git gzip npm zip && \
+    zypper -q -n in glibc-locale git gzip npm zip && \
     zypper -q -n in -t pattern devel_C_C++ devel_python3 devel_perl
 
 # Install Ruby for building PDF’s
@@ -80,6 +80,11 @@ RUN zypper -q -n install python3-Jinja2 python3-PyYAML
 ADD startup.sh /usr/local/bin/startup.sh
 
 USER ${REGULARUSER}
+
+# Set locale
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US
+ENV LC_ALL en_US.UTF-8
 
 EXPOSE 8000
 WORKDIR /home/docs

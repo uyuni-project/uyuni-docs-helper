@@ -39,6 +39,7 @@ print_ok() {
 
 print_incorrect_syntax() {
   print_error "Incorrect syntax. Use ${SCRIPT} -h for help"
+  exit 1
 }
 
 print_help() {
@@ -51,71 +52,149 @@ print_help() {
   echo ""
   echo "Mandatory arguments:"
   echo ""
-  echo "--product=<uyuni|suma>   Build the documentation for either Uyuni or SUSE Manager"
-  echo "--command=<make command> Use the desired command to build html/pdf, html&pdf, etc..."
-  echo "                         for example: 'all-uyuni'. You can use 'help' to list all"
-  echo "                         possible commands"
+  echo "-p|--product <uyuni|suma>   Build the documentation for either Uyuni or SUSE Manager"
+  echo "-c|--command <make command> Use the desired command to build html/pdf, html&pdf, etc..."
+  echo "                            for example: 'all-uyuni'. You can use 'help' to list all"
+  echo "                            possible commands. Be aware you still need to specify"
+  echo "                            one source for this to work"
+  echo ""
+  echo "${SCRIPT} can build documentation from two sources. Different parameters apply for each case"
+  echo ""
+  echo "Remote Git repository:"
+  echo "-g|--gitrepo <REPOSITORY> A path to a HTTP git repository where the code for the"
+  echo "                          documentation is."
+  echo "                          If the value does not start with 'https://'"
+  echo "                          then the value is considered as a GitHUb user/organization and"
+  echo "                          the URL in the form https://github.com/<REPOSITORY>/uyuni-docs.git"
+  echo "                          will be used"
+  echo "                          If not specified at all, the default value will be"
+  echo "                          https://github.com/uyuni-project/uyuni-docs.git"
+  echo "-r|--gitref <REFERENCE>   A git branch (master by default)"
+  echo "-o|--output <PATH>        An existing path to store the output of the build. A directory"
+  echo "                          'build' will be created inside. Optional"
+  echo ""
+  echo "Local Git repository:"
+  echo "-l|--localclone <GIT_CLONE> A path to a local git repository. The output of the build will"
+  echo "                            be placed inside this path as a 'build' directory"
   echo ""
   echo "Optional arguments:"
-  echo "--serve                  Start a HTTP server at the end of the build so the"
+  echo "-s|--serve               Start a HTTP server at the end of the build so the"
   echo "                         documentation can be inspected (disabled by default)"
-  echo "--gitrepo=<REPOSITORY>   A path to a HTTP git repository where the code for the"
-  echo "                         documentation is (https://github.com/uyuni-project/uyuni-docs.git"
-  echo "                         by default)"
-  echo "--gitref=<REFERENCE>     A git branch (master by default)"
-  echo "--localclone=<GIT_CLONE> A path to a local clone of the git repository that will be"
-  echo "                         used for building, and where the output of the built will"
-  echo "                         be placed. If present, then --gitrepo and --gitref are ignored"
 }
 
 # read the options
-ARGS=$(getopt -o h --long help,gitrepo:,gitref:,localclone:,product:,command:,serve -n "${SCRIPT}" -- "$@")
+ARGS=$(getopt -o hg:r:l:o:p:c:s --long help,gitrepo:,gitref:,localclone:,output:,product:,command:,serve -n "${SCRIPT}" -- "$@")
 if [ $? -ne 0 ];
 then
   print_incorrect_syntax
-  exit 1
 fi
 eval set -- "${ARGS}"
 
 # extract options and their arguments into variables
 while true ; do
   case "${1}" in
-    -h|--help)     print_help; exit 1;;
-    --gitrepo)     GITREPO="${2}"; shift 2;;
-    --gitref)      GITREF="${2}"; shift 2;;
-    --localclone)  LOCALCLONE="${2}"; shift 2;;
-    --product)     PRODUCT="${2}"; shift 2;;
-    --command)     COMMAND="${2}"; shift 2;;
-    --serve)       SERVE=1; shift 1;;
-    --)            shift ; break ;;
-    *)             print_incorrect_syntax; exit 1;;
+    -h|--help)       print_help; exit 1;;
+    -g|--gitrepo)    GITREPO="${2}"; shift 2;;
+    -r|--gitref)     GITREF="${2}"; shift 2;;
+    -l|--localclone) LOCALCLONE="${2}"; shift 2;;
+    -o|--output)     OUTPUT="${2}"; shift 2;;
+    -p|--product)    PRODUCT="${2}"; shift 2;;
+    -c|--command)    COMMAND="${2}"; shift 2;;
+    -s|--serve)       SERVE=1; shift 1;;
+    --)              shift ; break ;;
+    *)               print_incorrect_syntax; exit 1;;
   esac
 done
 
-if [ -z ${PRODUCT} -o -z ${COMMAND} ]; then
+# Command is mandatory
+if [ -z ${COMMAND} ]; then
   print_incorrect_syntax
-  exit 1
 fi
 
-if [ -z ${LOCALCLONE} ]; then
-  if [ -z ${GITREPO} -o -z ${GITREF} ]; then
-      print_incorrect_syntax
-      exit 1
+# Print a special error for the help command
+if [ "${COMMAND}" == "help" ]; then
+  if [ -z ${LOCALCLONE} ] && [ -z ${GITREPO} ]; then
+    print_error "A source (a remote or local git repository) is needed for this."
+    print_incorrect_syntax
+  # Define a default product, if none is available, so we can show the help
+  elif [ -z ${PRODUCT} ]; then
+    PRODUCT='suma'
   fi
-elif [ ! -d ${LOCALCLONE} ]; then
+fi
+
+# Product is mandatory
+if [ -z ${PRODUCT} ]; then
+  print_incorrect_syntax
+fi
+
+# Either a remote source or a local one must be used
+if [ -z ${LOCALCLONE} ]; then
+  if [ -z ${GITREPO} ]; then
+    print_incorrect_syntax
+  fi
+  if [ -z ${GITREF} ]; then
+    # Default Git reference
+    GITREF='master'
+  fi
+  SOURCE="-e GITREPO=${GITREPO} -e GITREF=${GITREF}"
+  if [ ! -z ${OUTPUT} ]; then
+    if [ ! -d ${OUTPUT} ]; then
+      print_error "${OUTPUT} is not a directory or does not exist"
+      exit 2
+    else
+      SOURCE="${SOURCE} -v ${OUTPUT}:/tmp/output --userns=keep-id"
+      if [ "${COMMAND}" != "help" ]; then
+        print_info "Output will be stored at ${OUTPUT}/build"
+      fi
+      OUTDIR="${OUTPUT}/build"
+    fi
+  fi
+else
+  if [ ! -z ${OUTPUT} ]; then
+    print_incorrect_syntax
+  fi
+  if [ ! -z ${GITREPO} ] || [ ! -z ${GITREF} ]; then
+    print_incorrect_syntax
+  fi
+  if [ ! -d ${LOCALCLONE} ]; then
     print_error "${LOCALCLONE} is not a directory or does not exist"
+    exit 2
+  else
+    SOURCE="-v ${LOCALCLONE}:/tmp/uyuni-docs --userns=keep-id"
+    if [ "${COMMAND}" != "help" ]; then
+      print_info "Output will be stored at ${LOCALCLONE}/build"
+    fi
+    OUTDIR="${LOCALCLONE}/build"
+  fi
+fi
+
+# Guess the GitHub URL
+if [[ ! "${GITREPO}" =~ ^https:// ]]; then
+    GITREPO="https://github.com/${GITREPO}/uyuni-docs.git"
 fi
 
 if [ -z ${LOCALCLONE} ]; then
-  SOURCE="-e GITREPO=${GITREPO} -e GITREF=${GITREF}"
-else
-  SOURCE="-v ${LOCALCLONE}:/tmp/uyuni-docs --userns=keep-id"
-fi
+  SOURCE="${SOURCE} -e GITREPO=${GITREPO} -e GITREF=${GITREF}"
+  fi
 
 print_info "Pulling the latest contaimer image..."
 podman pull ${IMAGE}
-if [ ${SERVE} -eq 1 ]; then
+if [ ${SERVE} -eq 1 ] && [ "${COMMAND}" != "help" ]; then
  print_info "The documentation will be served via HTTP. To stop the container when you are done, use CTRL+C"
 fi
-print_info "Bulding the doc..."
+if [ "${COMMAND}" == "help" ]; then
+  print_info "Showing the help..."
+else
+  print_info "Bulding the doc..."
+fi
 podman run -ti --rm ${SOURCE} -e PRODUCT=${PRODUCT} -e COMMAND=${COMMAND} -e SERVE=${SERVE} -p 8000:8000 ${IMAGE}
+RET=${?}
+
+if [ ! -z ${OUTDIR} ] && [ "${COMMAND}" != "help" ]; then
+    print_info "You can find find the build output at ${OUTDIR}"
+fi
+
+if [ ${RET} -ne 0 ]; then
+   print_error "There were errors! Please review the log!"
+   exit ${RET}
+fi
