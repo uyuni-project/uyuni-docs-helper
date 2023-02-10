@@ -81,7 +81,7 @@ print_help() {
   echo "                            be placed inside this path as a 'build' directory"
   echo ""
   echo "Optional arguments:"
-  echo "-t|--tag                 Use a secific tag for the contaimer image. Can be useful if you"
+  echo "-t|--tag                 Use a secific tag for the container image. Can be useful if you"
   echo "                         want to build an old documentation using an old version of the"
   echo "                         toolchain. (latest used by default)"
   echo "-s|--serve               Start a HTTP server at the end of the build so the"
