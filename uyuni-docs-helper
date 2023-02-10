@@ -25,6 +25,9 @@ SERVE=0
 # Image
 IMAGE='docker.io/juliogonzalez/uyuni-docs'
 
+# Default tag
+TAG='latest'
+
 print_info() {
   echo -e "\033[1;36m[INFO] ${1}\033[0m"
 }
@@ -78,12 +81,15 @@ print_help() {
   echo "                            be placed inside this path as a 'build' directory"
   echo ""
   echo "Optional arguments:"
+  echo "-t|--tag                 Use a secific tag for the contaimer image. Can be useful if you"
+  echo "                         want to build an old documentation using an old version of the"
+  echo "                         toolchain. (latest used by default)"
   echo "-s|--serve               Start a HTTP server at the end of the build so the"
   echo "                         documentation can be inspected (disabled by default)"
 }
 
 # read the options
-ARGS=$(getopt -o hg:r:l:o:p:c:s --long help,gitrepo:,gitref:,localclone:,output:,product:,command:,serve -n "${SCRIPT}" -- "$@")
+ARGS=$(getopt -o hg:r:l:o:p:c:t:s --long help,gitrepo:,gitref:,localclone:,output:,product:,command:,tag:,serve -n "${SCRIPT}" -- "$@")
 if [ $? -ne 0 ];
 then
   print_incorrect_syntax
@@ -100,7 +106,8 @@ while true ; do
     -o|--output)     OUTPUT="${2}"; shift 2;;
     -p|--product)    PRODUCT="${2}"; shift 2;;
     -c|--command)    COMMAND="${2}"; shift 2;;
-    -s|--serve)       SERVE=1; shift 1;;
+    -t|--tag)        IMAGE="${IMAGE}:${2}"; shift 2;;
+    -s|--serve)      SERVE=1; shift 1;;
     --)              shift ; break ;;
     *)               print_incorrect_syntax; exit 1;;
   esac
