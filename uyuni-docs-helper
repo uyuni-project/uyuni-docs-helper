@@ -4,12 +4,12 @@
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option)
 # any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
 # more details.
-# 
+#
 # You should have received a copy of the GNU General Public License along
 # with this program. If not, see <https://www.gnu.org/licenses/>.
 
@@ -17,7 +17,7 @@
 LANG=en_EN
 
 # Get script name
-SCRIPT=$(basename ${0})
+SCRIPT=$(basename "${0}")
 
 # By default, do not serve the doc using HTTP
 SERVE=0
@@ -120,37 +120,37 @@ while true ; do
 done
 
 # Command is mandatory
-if [ -z ${COMMAND} ]; then
+if [ -z "${COMMAND}" ]; then
   print_incorrect_syntax
 fi
 
 # Print a special error for the help command
 if [ "${COMMAND}" == "help" ]; then
-  if [ -z ${LOCALCLONE} ] && [ -z ${GITREPO} ]; then
+  if [ -z "${LOCALCLONE}" ] && [ -z "${GITREPO}" ]; then
     print_error "A source (a remote or local git repository) is needed for this."
     print_incorrect_syntax
   # Define a default product, if none is available, so we can show the help
-  elif [ -z ${PRODUCT} ]; then
+  elif [ -z "${PRODUCT}" ]; then
     PRODUCT='suma'
   fi
 fi
 
 # Product is mandatory
-if [ -z ${PRODUCT} ]; then
+if [ -z "${PRODUCT}" ]; then
   print_incorrect_syntax
 fi
 
 # Either a remote source or a local one must be used
-if [ -z ${LOCALCLONE} ]; then
-  if [ -z ${GITREPO} ]; then
+if [ -z "${LOCALCLONE}" ]; then
+  if [ -z "${GITREPO}" ]; then
     print_incorrect_syntax
   fi
-  if [ -z ${GITREF} ]; then
+  if [ -z "${GITREF}" ]; then
     print_incorrect_syntax
   fi
   SOURCE="-e GITREPO=${GITREPO} -e GITREF=${GITREF}"
-  if [ ! -z ${OUTPUT} ]; then
-    if [ ! -d ${OUTPUT} ]; then
+  if [ -n "${OUTPUT}" ]; then
+    if [ ! -d "${OUTPUT}" ]; then
       print_error "${OUTPUT} is not a directory or does not exist"
       exit 2
     else
@@ -162,13 +162,13 @@ if [ -z ${LOCALCLONE} ]; then
     fi
   fi
 else
-  if [ ! -z ${OUTPUT} ]; then
+  if [ -n "${OUTPUT}" ]; then
     print_incorrect_syntax
   fi
-  if [ ! -z ${GITREPO} ] || [ ! -z ${GITREF} ]; then
+  if [ -n "${GITREPO}" ] || [ -n "${GITREF}" ]; then
     print_incorrect_syntax
   fi
-  if [ ! -d ${LOCALCLONE} ]; then
+  if [ ! -d "${LOCALCLONE}" ]; then
     print_error "${LOCALCLONE} is not a directory or does not exist"
     exit 2
   else
@@ -185,12 +185,12 @@ if [[ ! "${GITREPO}" =~ ^https:// ]]; then
     GITREPO="https://github.com/${GITREPO}/uyuni-docs.git"
 fi
 
-if [ -z ${LOCALCLONE} ]; then
+if [ -z "${LOCALCLONE}" ]; then
   SOURCE="${SOURCE} -e GITREPO=${GITREPO} -e GITREF=${GITREF}"
   fi
 
 print_info "Pulling the latest container image..."
-podman pull ${IMAGE}
+podman pull "${IMAGE}"
 if [ ${SERVE} -eq 1 ] && [ "${COMMAND}" != "help" ]; then
  print_info "The documentation will be served via HTTP. To stop the container when you are done, use CTRL+C"
 fi
@@ -199,11 +199,11 @@ if [ "${COMMAND}" == "help" ]; then
 else
   print_info "Bulding the doc..."
 fi
-podman run -ti --rm ${SOURCE} -e PRODUCT=${PRODUCT} -e COMMAND=${COMMAND} -e SERVE=${SERVE} ${PORTS} ${IMAGE}
+podman run -ti --rm "${SOURCE}" -e PRODUCT="${PRODUCT}" -e COMMAND="${COMMAND}" -e SERVE="${SERVE}" "${PORTS}" "${IMAGE}"
 RET=${?}
 
-if [ ! -z ${OUTDIR} ] && [ "${COMMAND}" != "help" ]; then
-    print_info "You can find find the build output at ${OUTDIR}"
+if [ -n "${OUTDIR}" ] && [ "${COMMAND}" != "help" ]; then
+    print_info "You can find the build output at ${OUTDIR}"
 fi
 
 if [ ${RET} -ne 0 ]; then
