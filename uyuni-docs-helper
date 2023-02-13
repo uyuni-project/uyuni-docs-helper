@@ -28,6 +28,12 @@ IMAGE='docker.io/juliogonzalez/uyuni-docs'
 # Default tag
 TAG='latest'
 
+# Default Git repository
+GITREPO='https://github.com/uyuni-project/uyuni-docs.git'
+
+# Default Git reference
+GITREF='master'
+
 print_info() {
   echo -e "\033[1;36m[INFO] ${1}\033[0m"
 }
@@ -71,8 +77,8 @@ print_help() {
   echo "                          the URL in the form https://github.com/<REPOSITORY>/uyuni-docs.git"
   echo "                          will be used"
   echo "                          If not specified at all, the default value will be"
-  echo "                          https://github.com/uyuni-project/uyuni-docs.git"
-  echo "-r|--gitref <REFERENCE>   A git branch (master by default)"
+  echo "                          ${GITREPO}"
+  echo "-r|--gitref <REFERENCE>   A git branch (${GITREF} by default)"
   echo "-o|--output <PATH>        An existing path to store the output of the build. A directory"
   echo "                          'build' will be created inside. Optional"
   echo ""
@@ -83,7 +89,7 @@ print_help() {
   echo "Optional arguments:"
   echo "-t|--tag                 Use a secific tag for the container image. Can be useful if you"
   echo "                         want to build an old documentation using an old version of the"
-  echo "                         toolchain. (latest used by default)"
+  echo "                         toolchain. (${TAG} used by default)"
   echo "-s|--serve               Start a HTTP server at the end of the build so the"
   echo "                         documentation can be inspected (disabled by default)"
 }
@@ -140,8 +146,7 @@ if [ -z ${LOCALCLONE} ]; then
     print_incorrect_syntax
   fi
   if [ -z ${GITREF} ]; then
-    # Default Git reference
-    GITREF='master'
+    print_incorrect_syntax
   fi
   SOURCE="-e GITREPO=${GITREPO} -e GITREF=${GITREF}"
   if [ ! -z ${OUTPUT} ]; then
