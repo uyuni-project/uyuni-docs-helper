@@ -113,7 +113,7 @@ while true ; do
     -p|--product)    PRODUCT="${2}"; shift 2;;
     -c|--command)    COMMAND="${2}"; shift 2;;
     -t|--tag)        IMAGE="${IMAGE}:${2}"; shift 2;;
-    -s|--serve)      SERVE=1; shift 1;;
+    -s|--serve)      SERVE=1; PORTS='-p 8000:8000'; shift 1;;
     --)              shift ; break ;;
     *)               print_incorrect_syntax; exit 1;;
   esac
@@ -199,7 +199,7 @@ if [ "${COMMAND}" == "help" ]; then
 else
   print_info "Bulding the doc..."
 fi
-podman run -ti --rm ${SOURCE} -e PRODUCT=${PRODUCT} -e COMMAND=${COMMAND} -e SERVE=${SERVE} -p 8000:8000 ${IMAGE}
+podman run -ti --rm ${SOURCE} -e PRODUCT=${PRODUCT} -e COMMAND=${COMMAND} -e SERVE=${SERVE} ${PORTS} ${IMAGE}
 RET=${?}
 
 if [ ! -z ${OUTDIR} ] && [ "${COMMAND}" != "help" ]; then
