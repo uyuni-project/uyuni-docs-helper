@@ -67,7 +67,9 @@ print_help() {
   echo "                            possible commands. Be aware you still need to specify"
   echo "                            one source for this to work"
   echo ""
-  echo "${SCRIPT} can build documentation from two sources. Different parameters apply for each case"
+  echo "${SCRIPT} can build documentation from two sources. Different parameters apply for each case."
+  echo "If both a local got repository and a remote git repository are specified, the remote git"
+  echo "repository is used"
   echo ""
   echo "Remote Git repository:"
   echo "-g|--gitrepo <REPOSITORY> A path to a HTTP git repository where the code for the"
@@ -142,12 +144,6 @@ fi
 
 # Either a remote source or a local one must be used
 if [ -z ${LOCALCLONE} ]; then
-  if [ -z ${GITREPO} ]; then
-    print_incorrect_syntax
-  fi
-  if [ -z ${GITREF} ]; then
-    print_incorrect_syntax
-  fi
   SOURCE="-e GITREPO=${GITREPO} -e GITREF=${GITREF}"
   if [ ! -z ${OUTPUT} ]; then
     if [ ! -d ${OUTPUT} ]; then
@@ -163,9 +159,6 @@ if [ -z ${LOCALCLONE} ]; then
   fi
 else
   if [ ! -z ${OUTPUT} ]; then
-    print_incorrect_syntax
-  fi
-  if [ ! -z ${GITREPO} ] || [ ! -z ${GITREF} ]; then
     print_incorrect_syntax
   fi
   if [ ! -d ${LOCALCLONE} ]; then
