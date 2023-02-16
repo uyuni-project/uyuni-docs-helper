@@ -16,8 +16,10 @@
 source ~/.bashrc
 echo "===================================================================="
 if [ ! -d /tmp/uyuni-docs ]; then
-echo " Git repository: ${GITREPO}"
-echo " Git reference: ${GITREF}"
+  echo " Git repository: ${GITREPO}"
+  echo " Git reference: ${GITREF}"
+else
+  echo " Git repository: A folder from outside the container is being used"
 fi
 echo " Product: ${PRODUCT}"
 echo " Make command: ${COMMAND}"
