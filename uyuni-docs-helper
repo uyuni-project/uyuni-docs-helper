@@ -47,7 +47,7 @@ print_ok() {
 }
 
 print_incorrect_syntax() {
-  print_error "Incorrect syntax. Use ${SCRIPT} -h for help"
+  print_error "Incorrect syntax: ${1} (use ${SCRIPT} -h for help)"
   exit 1
 }
 
@@ -68,7 +68,7 @@ print_help() {
   echo "                            one source for this to work"
   echo ""
   echo "${SCRIPT} can build documentation from two sources. Different parameters apply for each case."
-  echo "If both a local got repository and a remote git repository are specified, the remote git"
+  echo "If both a local git repository and a remote git repository are specified, the local git"
   echo "repository is used"
   echo ""
   echo "Remote Git repository:"
@@ -100,7 +100,7 @@ print_help() {
 ARGS=$(getopt -o hg:r:l:o:p:c:t:s --long help,gitrepo:,gitref:,localclone:,output:,product:,command:,tag:,serve -n "${SCRIPT}" -- "$@")
 if [ $? -ne 0 ];
 then
-  print_incorrect_syntax
+  print_incorrect_syntax "Invalid getopt call, notify this to the script maintainers"
 fi
 eval set -- "${ARGS}"
 
@@ -117,20 +117,19 @@ while true ; do
     -t|--tag)        IMAGE="${IMAGE}:${2}"; shift 2;;
     -s|--serve)      SERVE=1; PORTS='-p 8000:8000'; shift 1;;
     --)              shift ; break ;;
-    *)               print_incorrect_syntax; exit 1;;
+    *)               print_incorrect_syntax "Invalid arguements in the call"; exit 1;;
   esac
 done
 
 # Command is mandatory
 if [ -z ${COMMAND} ]; then
-  print_incorrect_syntax
+  print_incorrect_syntax "-c is mandatory"
 fi
 
 # Print a special error for the help command
 if [ "${COMMAND}" == "help" ]; then
   if [ -z ${LOCALCLONE} ] && [ -z ${GITREPO} ]; then
-    print_error "A source (a remote or local git repository) is needed for this."
-    print_incorrect_syntax
+    print_incorrect_syntax "A source (a remote or local git repository) is needed for this."
   # Define a default product, if none is available, so we can show the help
   elif [ -z ${PRODUCT} ]; then
     PRODUCT='suma'
@@ -159,7 +158,7 @@ if [ -z ${LOCALCLONE} ]; then
   fi
 else
   if [ ! -z ${OUTPUT} ]; then
-    print_incorrect_syntax
+    print_incorrect_syntax "Using -o together with -l is invalid"
   fi
   if [ ! -d ${LOCALCLONE} ]; then
     print_error "${LOCALCLONE} is not a directory or does not exist"
