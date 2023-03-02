@@ -138,7 +138,7 @@ fi
 
 # Product is mandatory
 if [ -z ${PRODUCT} ]; then
-  print_incorrect_syntax
+    print_incorrect_syntax "Product (-p) is mandatory"
 fi
 
 # Either a remote source or a local one must be used
