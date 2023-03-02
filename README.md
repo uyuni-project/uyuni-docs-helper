@@ -11,6 +11,10 @@ This a result of [SUSE's Hack Week 22](https://hackweek.opensuse.org/22/projects
 ## For everyone
 - `uyuni-docs-helper`: The bash script that allows any contributor to build, inspect the outputs of the build procedure via HTTP and even get outputs at the local system.
 
+### Example
+
+`./uyuni-docs-helper -r master -o /tmp/test -c obs-packages-suma-en -p suma` would build the HTML and PDFs for English language, from the `master` branch at https://github.com/uyuni-project/uyuni-docs (default repository), for SUSE Manager.
+
 ## For image maintainers
 - `image` directory: Contains the Dockerfile, the `startup.sh` script for the container, and the `build-and-publish` helper (that can be used to build and publish the container after changing whatever is needed on the other two files, passing arguments to the build, such as `--no-cache` is allowed).
 
