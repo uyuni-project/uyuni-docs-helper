@@ -31,8 +31,8 @@ RUN git clone --depth 1 https://github.com/rbenv/rbenv.git ~/.rbenv && \
     echo 'eval "$(rbenv init -)"' >> ~/.bashrc && \
     source ~/.bashrc && \ 
     git clone --depth 1 https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build && \
-    rbenv install 3.0.0 && \
-    rbenv global 3.0.0
+    rbenv install 3.2.0 && \
+    rbenv global 3.2.0
 # End of Install Ruby for building PDF’s
 
 # NVM and Node
@@ -50,11 +50,11 @@ RUN source ~/.bashrc && \
 
 USER ${REGULARUSER}
 # Asciidoctor
-RUN source ~/.bashrc && gem install asciidoctor -v 2.0.17
+RUN source ~/.bashrc && gem install asciidoctor
 
 # Asciidoctor-pdf
 RUN source ~/.bashrc && \
-    gem install asciidoctor-pdf -v 1.6.2 && \
+    gem install asciidoctor-pdf && \
     gem install rouge coderay rb-pygments concurrent-ruby asciidoctor-diagram
 
 USER root
