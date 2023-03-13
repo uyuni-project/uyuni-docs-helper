@@ -35,4 +35,6 @@ For publishing the image, you will need a [Docker Hub](https://hub.docker.com/) 
 
 We plan to move the images to [GitHub packages](https://docs.github.com/en/actions/publishing-packages/publishing-docker-images#publishing-images-to-github-packages) in the future.
 
+# Troubleshooting
 
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
