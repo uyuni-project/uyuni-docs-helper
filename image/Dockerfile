@@ -50,11 +50,11 @@ RUN source ~/.bashrc && \
 
 USER ${REGULARUSER}
 # Asciidoctor
-RUN source ~/.bashrc && gem install asciidoctor
+RUN source ~/.bashrc && gem install asciidoctor -v 2.0.18
 
 # Asciidoctor-pdf
 RUN source ~/.bashrc && \
-    gem install asciidoctor-pdf && \
+    gem install asciidoctor-pdf -v 2.3.4 && \
     gem install rouge coderay rb-pygments concurrent-ruby asciidoctor-diagram
 
 USER root
