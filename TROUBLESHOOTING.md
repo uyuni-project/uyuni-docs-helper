@@ -10,7 +10,7 @@ ERRO[0000] cannot find UID/GID for user pat: no subuid ranges found for user "MY
 
 This means your current user does not allow creating rootless containers (containers that run as a non-root user), because a requirement is missing: subuid and subguid ranges for the user.
 
-Most recent operating systems will do this for you, but if your user was created on a old version of such operating system, and then you kept upgrading, it is possible subh subuid and subguid are missing.
+Most recent operating systems will do this for you, but if your user was created on an old version of such operating system, and then you kept upgrading, it is possible subuid and subguid are missing.
 
 How to fix this problem is [documented](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md#etcsubuid-and-etcsubgid-configuration)
 
