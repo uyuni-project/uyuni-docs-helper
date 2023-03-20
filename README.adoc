@@ -1,0 +1,108 @@
+= Repository purpose
+:toc:
+:sectnumlevels:
+:sectnums:
+:sectanchors:
+
+This project provides a container image capable of building the link:https://github.com/uyuni-project/uyuni-docs[Uyuni Documentation]. 
+It enables automation and reduces the time to build for contributors.
+
+Besides the container, a helper is provider so people who do not know anything about containers can easily use them.
+This a result of link:https://hackweek.opensuse.org/22/projects/testing-gnu-slash-linux-distributions-on-uyuni[SUSE's Hack Week 22]
+
+
+= Repository structure
+
+== For everyone
+The  `uyuni-docs-helper` is a bash script that allows any contributor to build the documentation tools container image. You can then use this image to build and inspect the documentation build process outputs on your local system or via http.
+
+=== Basic Example
+
+The following command builds the HTML and PDFs for all languages, from the `master` branch at https://github.com/uyuni-project/uyuni-docs (default repository), for SUSE Manager.
+
+`./uyuni-docs-helper -r master -o /tmp/test -c antora-suma -p suma`  
+
+=== Advanced Examples
+
+==== Building single or all PDF documents:
+
+You can use the following targets for building single PDF documents with this container. 
+Building single commands is much faster if you are just interested in testing out your changes on a single document.
+Replace *<productname>* and *<lang>* with the appropriate value:
+
+.productnames
+----
+suma
+uyuni
+----
+
+.langcode
+----
+en
+ja
+ko
+zh_CN
+----
+
+===== Available PDF book targets
+
+The installation and upgrade, client configuration and administration guides are provided in 4 languages. 
+Add the language suffix to the `-c` command to build a document in the target language. 
+----
+pdf-quickstart-<productname>
+pdf-installation-and-upgrade-<productname>-<lang>
+pdf-client-configuration-<productname>-<lang>
+pdf-administration-<productname>-<lang>
+pdf-reference-<productname>
+pdf-retail-<productname>
+pdf-common-workflows-<productname>
+pdf-specialized-guides-<productname>
+----
+
+.Example: Installation and upgrade guide in Chinese 
+
+----
+./uyuni-docs-helper -r master -o /tmp/test -c pdf-installation-and-upgrade-suma-zh_CN -p suma
+----
+
+===== Make all SUMA PDF documents*
+Use the `-c` parameter to specify a makefile command:
+You still must specify a product with the `-p` parameter.
+
+----
+./uyuni-docs-helper -r master -o /tmp/test -c pdf-suma-all -p suma
+----
+
+===== Make the administration guide
+Use the `-c` parameter to specify a makefile command:
+You still must specify a product with the `-p` parameter.
+
+----
+./uyuni-docs-helper -r master -o /tmp/test -c pdf-administration-suma-en -p suma
+----
+
+
+
+== For image maintainers
+- `image` directory: Contains the Dockerfile, the `startup.sh` script for the container, and the `build-and-publish` helper (that can be used to build and publish the container after changing whatever is needed on the other two files, passing arguments to the build, such as `--no-cache` is allowed).
+
+= Requirements
+
+== For everyone
+
+- Have `podman` installed (recommended)
+
+or
+
+- Have `docker` installed and an alias `podman` that calls `docker` (for bash that means adding `alias docker='podman'` to the file `~/.alias`)
+
+
+== For image maintainers
+
+For publishing the image, you will need a [Docker Hub](https://hub.docker.com/) account, and then talk to [Julio González Gil](https://build.opensuse.org/users/juliogonzalezgil) to get added as maintainer at the Docker Hub.
+
+We plan to move the images to [GitHub packages](https://docs.github.com/en/actions/publishing-packages/publishing-docker-images#publishing-images-to-github-packages) in the future.
+
+= Troubleshooting
+
+See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
