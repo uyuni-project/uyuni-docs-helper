@@ -49,10 +49,13 @@ zh_CN
 The installation and upgrade, client configuration and administration guides are provided in 4 languages. 
 Add the language suffix to the `-c` command to build a document in the target language. 
 ----
-pdf-quickstart-<productname>
+Language supported:
 pdf-installation-and-upgrade-<productname>-<lang>
 pdf-client-configuration-<productname>-<lang>
 pdf-administration-<productname>-<lang>
+
+Language unsupported:
+pdf-quickstart-<productname>
 pdf-reference-<productname>
 pdf-retail-<productname>
 pdf-common-workflows-<productname>
