@@ -19,3 +19,33 @@ Assuming there are no ranges assigned (check `/etc/subuid` and `/etc/subguid`), 
 ```
 sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 MYUSER
 ```
+
+## Wrong filesystem error
+
+If you see the following error:
+
+```
+Error: ".local/share/containers/storage/btrfs" is not on a btrfs filesystem: prerequisites for driver not satisfied (wrong filesystem?)
+```
+
+This issue appeared when using the XFS filesystem for my `/home` directory. By default rootless containers are configured to use a supported driver for the root file system. To ensure general compatibility set the container driver to `overlay`. For more information see: `man 5 containers-storage.conf`.
+
+ As root modify `/etc/containers/storage.conf`: 
+
+```
+[storage]
+
+# Default Storage Driver, Must be set for proper operation.
+#driver = "btrfs"
+driver = "overlay"
+```
+
+Next resolve the issue by wiping the entire `/var/lib/containers` directory.
+
+**CAUTION! This will delete all volumes in the directory! Do not do this without backing up the directory, copying your containers elsewhere, or making sure you don't need anything that exists there! Before executing this action stop all running containers with: `podman-stop --all`**
+
+```
+rm -rf /var/lib/containers
+```
+
+You should now be able to build documentation correctly using podman.
