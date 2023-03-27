@@ -45,9 +45,6 @@ Next resolve the issue by wiping the entire `/var/lib/containers` directory.
 **CAUTION! This will delete all volumes in the directory! Do not do this without backing up the directory, copying your containers elsewhere, or making sure you don't need anything that exists there! Before executing this action stop all running containers with: `podman-stop --all`**
 
 ```
-# NOTE: If you have no running containers the first command to unmount is not required.
-
-umount /var/lib/containers/storage/btrfs
 rm -rf /var/lib/containers
 ```
 
