@@ -28,7 +28,7 @@ If you see the following error:
 Error: ".local/share/containers/storage/btrfs" is not on a btrfs filesystem: prerequisites for driver not satisfied (wrong filesystem?)
 ```
 
-This issue appeared when using the XFS filesystem for my /home/ directory. By default containers are configured to use a supported driver for the file system in use. To ensure general compatibility set the container driver to `overlay`. For more information see: `man 5 containers-storage.conf`.
+This issue appeared when using the XFS filesystem for my `/home` directory. By default rootless containers are configured to use a supported driver for the root file system. To ensure general compatibility set the container driver to `overlay`. For more information see: `man 5 containers-storage.conf`.
 
  As root modify `/etc/containers/storage.conf`: 
 
