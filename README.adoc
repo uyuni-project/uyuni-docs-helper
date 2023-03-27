@@ -108,4 +108,4 @@ We plan to move the images to [GitHub packages](https://docs.github.com/en/actio
 
 = Troubleshooting
 
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+See link:https://github.com/jcayouette/uyuni-docs-helper/blob/main/troubleshooting.adoc[TROUBLESHOOTING]
