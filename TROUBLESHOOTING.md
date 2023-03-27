@@ -36,10 +36,7 @@ This issue appeared when using the XFS filesystem for my `/home` directory. By d
 [storage]
 
 # Default Storage Driver, Must be set for proper operation.
-#Switched to overlayfs due to https://github.com/containers/podman/issues/16882
-
-#driver = "btrfs"   <---- comment out btrfs
-driver = "overlay" <---- replace with overlay (generic)
+driver = "overlay"
 ```
 
 Next resolve the issue by wiping the entire `/var/lib/containers` directory.
