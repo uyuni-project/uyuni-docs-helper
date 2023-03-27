@@ -1,8 +1,6 @@
-# Troubleshooting
+# podman
 
-## podman
-
-### ERRO[0000] cannot find UID/GID for user
+## ERRO[0000] cannot find UID/GID for user
 
 If you see the following error:
 
@@ -22,7 +20,7 @@ Assuming there are no ranges assigned (check `/etc/subuid` and `/etc/subguid`), 
 sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 MYUSER
 ```
 
-### Wrong filesystem error
+## Wrong filesystem error
 
 If you see the following error:
 
