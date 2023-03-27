@@ -41,19 +41,14 @@ driver = "overlay"
 
 Next resolve the issue by wiping the entire `/var/lib/containers` directory.
 
-**CAUTION! This will delete all volumes in the directory! Do not do this without backing up the directory, copying your containers elsewhere, or making sure you don't need anything that exists there!**
+**CAUTION! This will delete all volumes in the directory! Do not do this without backing up the directory, copying your containers elsewhere, or making sure you don't need anything that exists there!** Stop all running containers: `podman-stop --all`
 
 ```
 # NOTE: If you have no running containers the first command to unmount is not required.
+# If you do have running containers stop them.
 
-umount /var/lib/containers/storage/btrfs  
+umount /var/lib/containers/storage/btrfs
 rm -rf /var/lib/containers
-```
-
-Now restart podman services:
-
-```
-sudo systemctl restart podman
 ```
 
 You should now be able to build documentation correctly using podman.
