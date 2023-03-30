@@ -203,8 +203,9 @@ if [ ${RET} -eq 0 ]; then
     fi
 else
    print_error "There were errors! Please review the log!"
-   print_error "Depending on the error, there could also be build outputs at ${OUTDIR}"
+   if [ ! -z ${OUTDIR} ] && [ "${COMMAND}" != "help" ]; then
+       print_error "Depending on the error, there could also be build outputs at ${OUTDIR}"
+   fi
 fi
 
-
-   exit ${RET}
+exit ${RET}
