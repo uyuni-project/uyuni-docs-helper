@@ -163,6 +163,9 @@ else
   if [ ! -d ${LOCALCLONE} ]; then
     print_error "${LOCALCLONE} is not a directory or does not exist"
     exit 2
+  elif [ ! -d ${LOCALCLONE}/.git ]; then
+    print_error "${LOCALCLONE} is not a Git repository"
+    exit 2
   else
     SOURCE="-v ${LOCALCLONE}:/tmp/uyuni-docs --userns=keep-id"
     if [ "${COMMAND}" != "help" ]; then
@@ -179,7 +182,7 @@ fi
 
 if [ -z ${LOCALCLONE} ]; then
   SOURCE="${SOURCE} -e GITREPO=${GITREPO} -e GITREF=${GITREF}"
-  fi
+fi
 
 print_info "Pulling the latest container image..."
 podman pull ${IMAGE}
@@ -194,11 +197,14 @@ fi
 podman run -ti --rm ${SOURCE} -e PRODUCT=${PRODUCT} -e COMMAND=${COMMAND} -e SERVE=${SERVE} ${PORTS} ${IMAGE}
 RET=${?}
 
-if [ ! -z ${OUTDIR} ] && [ "${COMMAND}" != "help" ]; then
-    print_info "You can find find the build output at ${OUTDIR}"
+if [ ${RET} -eq 0 ]; then
+    if [ ! -z ${OUTDIR} ] && [ "${COMMAND}" != "help" ]; then
+        print_info "You can find find the build output at ${OUTDIR}"
+    fi
+else
+   print_error "There were errors! Please review the log!"
+   print_error "Depending on the error, there could also be build outputs at ${OUTDIR}"
 fi
 
-if [ ${RET} -ne 0 ]; then
-   print_error "There were errors! Please review the log!"
+
    exit ${RET}
-fi
