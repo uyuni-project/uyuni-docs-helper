@@ -141,6 +141,14 @@ if [ -z ${PRODUCT} ]; then
     print_incorrect_syntax "Product (-p) is mandatory"
 fi
 
+# Check if SELinux is present and Enforcing
+if [ -f /etc/selinux/config ]; then
+  if [ selinuxenabled ]; then
+    print_info "Enabling SELinux flags for volume"
+    SELINUXMOUNT=':Z'
+  fi
+fi
+
 # Either a remote source or a local one must be used
 if [ -z ${LOCALCLONE} ]; then
   SOURCE="-e GITREPO=${GITREPO} -e GITREF=${GITREF}"
@@ -149,7 +157,7 @@ if [ -z ${LOCALCLONE} ]; then
       print_error "${OUTPUT} is not a directory or does not exist"
       exit 2
     else
-      SOURCE="${SOURCE} -v ${OUTPUT}:/tmp/output --userns=keep-id"
+      SOURCE="${SOURCE} -v ${OUTPUT}:/tmp/output${SELINUXMOUNT} --userns=keep-id"
       if [ "${COMMAND}" != "help" ]; then
         print_info "Output will be stored at ${OUTPUT}/build"
       fi
@@ -167,7 +175,7 @@ else
     print_error "${LOCALCLONE} is not a Git repository"
     exit 2
   else
-    SOURCE="-v ${LOCALCLONE}:/tmp/uyuni-docs --userns=keep-id"
+    SOURCE="-v ${LOCALCLONE}:/tmp/uyuni-docs${SELINUXMOUNT} --userns=keep-id"
     if [ "${COMMAND}" != "help" ]; then
       print_info "Output will be stored at ${LOCALCLONE}/build"
     fi
