@@ -34,6 +34,22 @@ GITREPO='https://github.com/uyuni-project/uyuni-docs.git'
 # Default Git reference
 GITREF='master'
 
+# use gnu-getopt on macOS
+getopt_for_macos() {
+  if [ "$(uname -s)" == 'Darwin' ]; then
+    if [ ! -f /usr/local/opt/gnu-getopt/bin/getopt ]; then
+        if [ "${SHELL}" == "/usr/local/bin/fish" ]; then
+          print_error "The fish shell is not supported (yet), please use bash or zsh for now"
+          exit 1
+        fi
+      print_error "Please install gnu-getopt via Homebrew with: brew install gnu-getopt"
+      exit 1
+    else
+      export PATH="$(brew --prefix gnu-getopt)/bin:$PATH"
+    fi
+  fi
+}
+
 print_info() {
   echo -e "\033[1;36m[INFO] ${1}\033[0m"
 }
@@ -95,6 +111,9 @@ print_help() {
   echo "-s|--serve               Start a HTTP server at the end of the build so the"
   echo "                         documentation can be inspected (disabled by default)"
 }
+
+# adjustments for macOS
+getopt_for_macos
 
 # read the options
 ARGS=$(getopt -o hg:r:l:o:p:c:t:s --long help,gitrepo:,gitref:,localclone:,output:,product:,command:,tag:,serve -n "${SCRIPT}" -- "$@")

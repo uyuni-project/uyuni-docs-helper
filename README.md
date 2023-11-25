@@ -28,6 +28,22 @@ or
 
 - Have `docker` installed and an alias `podman` that calls `docker` (for bash that means adding `alias docker='podman'` to the file `~/.alias`)
 
+## macOS users
+
+Install the package `gnu-getopt` via e.g. Homebrew (https://brew.sh):
+
+```bash
+brew install gnu-getopt
+```
+
+Get Podman ready
+
+```bash
+podman machine init
+podman machine start
+# verify the connection
+podman system connection list
+```
 
 ## For image maintainers
 
