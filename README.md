@@ -16,7 +16,9 @@ This a result of [SUSE's Hack Week 22](https://hackweek.opensuse.org/22/projects
 `./uyuni-docs-helper -r master -o /tmp/test -c obs-packages-suma-en -p suma` would build the HTML and PDFs for English language, from the `master` branch at https://github.com/uyuni-project/uyuni-docs (default repository), for SUSE Manager.
 
 ## For image maintainers
-- `image` directory: Contains the Dockerfile, the `startup.sh` script for the container, and the `build-and-publish` helper (that can be used to build and publish the container after changing whatever is needed on the other two files, passing arguments to the build, such as `--no-cache` is allowed).
+
+- `image` directory: Contains the Dockerfile, the `startup.sh` script for the container, and the `build-locally` helper (that can be used to build the container locally for testing, passing arguments to the build, such as `--no-cache` is allowed). See below for more details
+- `.github/workflows`: Contains the `build-and-publish-container-images.yml` workflow definition to build and publish the image to the GitHub Container registry after each change on the repository
 
 # Requirements
 
@@ -47,9 +49,15 @@ podman system connection list
 
 ## For image maintainers
 
-For publishing the image, you will need a [Docker Hub](https://hub.docker.com/) account, and then talk to [Julio González Gil](https://build.opensuse.org/users/juliogonzalezgil) to get added as maintainer at the Docker Hub.
+The image is built and published automatically to `ghcr.io/<PROJECT>/uyuni-docs-helper:<BRANCH>` after each push to any repository branch.
 
-We plan to move the images to [GitHub packages](https://docs.github.com/en/actions/publishing-packages/publishing-docker-images#publishing-images-to-github-packages) in the future.
+By default:
+- `<PROJECT>` will be `uyuni-project`, unless you are working with your fork
+- `<BRANCH>` will be the branch name that got the push, it's the tag for the container image
+
+You can also build the image locally with the script at `images/build-locally`. In that case the image will be generated as `local/uyuni-docs-helper:latest` (notice `local` is here the project).
+
+You can then use `uyuni-docs-helper` with the `-j` and `-t` parameters to specify the right tag and project.
 
 # Troubleshooting
 

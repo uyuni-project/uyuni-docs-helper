@@ -13,5 +13,4 @@
 # You should have received a copy of the GNU General Public License along
 # with this program. If not, see <https://www.gnu.org/licenses/>.
 #
-podman build ${1} -t juliogonzalez/uyuni-docs .
-podman push juliogonzalez/uyuni-docs
+podman build ${1} -t local/uyuni-docs-helper .
