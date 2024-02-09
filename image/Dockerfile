@@ -1,4 +1,4 @@
-FROM opensuse/leap:15.4
+FROM opensuse/leap:15.5
 MAINTAINER Julio Gonzalez Gil <jgonzalez@suse.com>
 
 ARG REGULARUSER=docs
