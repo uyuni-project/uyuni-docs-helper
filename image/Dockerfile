@@ -46,6 +46,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | b
 RUN source ~/.bashrc && \
     npm i -g @antora/cli@3.1 @antora/site-generator@3.1 && \
     npm i -g @antora/lunr-extension
+    npm i -g asciidoctor @asciidoctor/tabs
 # End of Antora 3.1 and Lunrjs extension
 
 USER ${REGULARUSER}
