@@ -66,6 +66,13 @@ print_incorrect_syntax() {
   exit 1
 }
 
+get_dir_abs_path() {
+  (
+    cd "$(dirname ${1})"
+    echo "${PWD}/$(basename $1)"
+  )
+}
+
 print_help() {
   echo ""
   echo "Build the Uyuni doc using a container and (optionally) serve it for verification via HTTP"
@@ -181,6 +188,7 @@ if [ -z ${LOCALCLONE} ]; then
       print_error "${OUTPUT} is not a directory or does not exist"
       exit 2
     else
+      OUTPUT="$(get_dir_abs_path ${OUTPUT})"
       SOURCE="${SOURCE} -v ${OUTPUT}:/tmp/output${SELINUXMOUNT} --userns=keep-id"
       if [ "${COMMAND}" != "help" ]; then
         print_info "Output will be stored at ${OUTPUT}/build"
