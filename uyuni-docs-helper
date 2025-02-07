@@ -119,12 +119,13 @@ RET=$?
 
 if [ ${RET} -eq 0 ]; then
     chown -R $(id -u):$(id -g) ${OUTPUT_DIR} && print_info "Build successful. Output is available at: ${OUTPUT_DIR}"
-    if [ -f "${OUTPUT_DIR}/en/index.html" ]; then
+    INDEX_FILE=$(find ${OUTPUT_DIR} -name index.html | head -n 1)
+    if [ -n "${INDEX_FILE}" ]; then
     if [ "${SERVE}" -eq 1 ]; then
         print_info "Serving documentation at http://localhost:8000"
     fi
 else
-    print_error "index.html not found. Check if the build completed successfully."
+    print_error "index.html not found. Check if the build completed successfully and verify the build output at ${OUTPUT_DIR}"
 
     fi
 else
