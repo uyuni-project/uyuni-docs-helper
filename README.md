@@ -13,7 +13,7 @@ This a result of [SUSE's Hack Week 22](https://hackweek.opensuse.org/22/projects
 
 ### Example
 
-`./uyuni-docs-helper -r master -o /tmp/test -c obs-packages-suma-en -p suma` would build the HTML and PDFs for English language, from the `master` branch at https://github.com/uyuni-project/uyuni-docs (default repository), for SUSE Manager.
+`./uyuni-docs-helper -r master -o /tmp/test -c obs-packages-mlm-en -p mlm` would build the HTML and PDFs for English language, from the `master` branch at https://github.com/uyuni-project/uyuni-docs (default repository), for SUSE Multi-Linux Manager.
 
 ## For image maintainers
 
