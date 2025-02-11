@@ -185,10 +185,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Check command compatibility with the branch
-if [[ "${GITREF}" != "master" && "${PRODUCT}" == "mlm" ]]; then
-    print_error "Warning: The selected product '${PRODUCT}' may not be supported on this branch."
-fi
 
 # Check if SELinux is present and Enforcing
 if [ -f /etc/selinux/config ]; then
