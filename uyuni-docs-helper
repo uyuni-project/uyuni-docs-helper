@@ -188,13 +188,6 @@ if [[ ! " ${VALID_PRODUCTS[@]} " =~ " ${PRODUCT} " ]]; then
     exit 1
 fi
 
-# Check if the build fails
-if [ $? -ne 0 ]; then
-    print_error "Invalid product. Allowed: Master: uyuni, mlm | Non Master branches: uyuni, suma"
-    exit 1
-fi
-
-
 # Check if SELinux is present and Enforcing
 if [ -f /etc/selinux/config ]; then
   if [ selinuxenabled ]; then
