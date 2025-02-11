@@ -83,7 +83,7 @@ print_help() {
   echo ""
   echo "Mandatory arguments:"
   echo ""
-  echo "-p|--product <uyuni|mlm|suma>   Build the documentation for Uyuni,  SUSE Multi-Linux Manager or SUSE Manager"
+  echo "-p|--product <${VALID_PRODUCTS_PIPE}>   Build the documentation for ${VALID_PRODUCTS_LONG_COMMA}"
   echo "-c|--command <make command> Use the desired command to build html/pdf, html&pdf, etc..."
   echo "                            for example: 'all-uyuni'. You can use 'help' to list all"
   echo "                            possible commands. Be aware you still need to specify"
