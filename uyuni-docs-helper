@@ -33,6 +33,22 @@ GITREPO='https://github.com/uyuni-project/uyuni-docs.git'
 # Default Git reference
 GITREF='master'
 
+# use gnu-getopt on macOS
+getopt_for_macos() {
+  if [ "$(uname -s)" == 'Darwin' ]; then
+    if [ ! -f /usr/local/opt/gnu-getopt/bin/getopt ]; then
+        if [ "${SHELL}" == "/usr/local/bin/fish" ]; then
+          print_error "The fish shell is not supported (yet), please use bash or zsh for now"
+          exit 1
+        fi
+      print_error "Please install gnu-getopt via Homebrew with: brew install gnu-getopt"
+      exit 1
+    else
+      export PATH="$(brew --prefix gnu-getopt)/bin:$PATH"
+    fi
+  fi
+}
+
 print_info() {
   echo -e "\033[1;36m[INFO] ${1}\033[0m"
 }
@@ -50,6 +66,13 @@ print_incorrect_syntax() {
   exit 1
 }
 
+get_dir_abs_path() {
+  (
+    cd "$(dirname ${1})"
+    echo "${PWD}/$(basename $1)"
+  )
+}
+
 print_help() {
   echo ""
   echo "Build the Uyuni doc using a container and (optionally) serve it for verification via HTTP"
@@ -60,67 +83,187 @@ print_help() {
   echo ""
   echo "Mandatory arguments:"
   echo ""
-  echo "-p|--product <uyuni|mlm|suma>   Build the documentation for Uyuni, SUSE Multi-Linux Manager, or SUMA"
+  echo "-p|--product <uyuni|mlm>   Build the documentation for either Uyuni or SUSE Multi-Linux Manager"
   echo "-c|--command <make command> Use the desired command to build html/pdf, html&pdf, etc..."
   echo "                            for example: 'all-uyuni'. You can use 'help' to list all"
   echo "                            possible commands. Be aware you still need to specify"
   echo "                            one source for this to work"
+  echo ""
+  echo "${SCRIPT} can build documentation from two sources. Different parameters apply for each case."
+  echo "If both a local git repository and a remote git repository are specified, the local git"
+  echo "repository is used"
+  echo ""
+  echo "Remote Git repository:"
+  echo "-g|--gitrepo <REPOSITORY> A path to a HTTP git repository where the code for the"
+  echo "                          documentation is."
+  echo "                          If the value does not start with 'https://'"
+  echo "                          then the value is considered as a GitHUb user/organization and"
+  echo "                          the URL in the form https://github.com/<REPOSITORY>/uyuni-docs.git"
+  echo "                          will be used"
+  echo "                          If not specified at all, the default value will be"
+  echo "                          ${GITREPO}"
+  echo "-r|--gitref <REFERENCE>   A git branch (${GITREF} by default)"
+  echo "-o|--output <PATH>        An existing path to store the output of the build. A directory"
+  echo "                          'build' will be created inside. Optional"
+  echo ""
+  echo "Local Git repository:"
+  echo "-l|--localclone <GIT_CLONE> A path to a local git repository. The output of the build will"
+  echo "                            be placed inside this path as a 'build' directory"
+  echo ""
+  echo "Optional arguments:"
+  echo "-t|--tag                 Use a secific tag for the container image. Can be useful if you"
+  echo "                         want to build an old documentation using an old version of the"
+  echo "                         toolchain. (${TAG} used by default)"
+  echo "-j|--project             Specify a GitHub project. It can be useful if you want to use"
+  echo "                         a container image in a forked repository in your personal project"
+  echo "-s|--serve               Start a HTTP server at the end of the build so the"
+  echo "                         documentation can be inspected (disabled by default)"
 }
 
-# Read command-line options
+# adjustments for macOS
+getopt_for_macos
+
+# read the options
 ARGS=$(getopt -o hg:r:l:o:p:c:t:j:s --long help,gitrepo:,gitref:,localclone:,output:,product:,command:,tag:,project:,serve -n "${SCRIPT}" -- "$@")
-if [ $? -ne 0 ]; then
+if [ $? -ne 0 ];
+then
   print_incorrect_syntax "Invalid getopt call, notify this to the script maintainers"
 fi
-
 eval set -- "${ARGS}"
 
-# Extract options into variables
-while true; do
-  case "$1" in
+# extract options and their arguments into variables
+while true ; do
+  case "${1}" in
     -h|--help)       print_help; exit 1;;
-    -g|--gitrepo)    GITREPO="$2"; shift 2;;
-    -r|--gitref)     GITREF="$2"; shift 2;;
-    -l|--localclone) LOCALCLONE="$2"; shift 2;;
-    -o|--output)     OUTPUT="$2"; shift 2;;
-    -p|--product)    PRODUCT="$2"; shift 2;;
-    -c|--command)    COMMAND="$2"; shift 2;;
-    -t|--tag)        TAG="$2"; shift 2;;
-    -j|--project)    PROJECT="$2"; shift 2;;
-    -s|--serve)      SERVE=1; shift 1;;
-    --)              shift; break;;
-    *)               print_incorrect_syntax "Invalid arguments in the call"; exit 1;;
+    -g|--gitrepo)    GITREPO="${2}"; shift 2;;
+    -r|--gitref)     GITREF="${2}"; shift 2;;
+    -l|--localclone) LOCALCLONE="${2}"; shift 2;;
+    -o|--output)     OUTPUT="${2}"; shift 2;;
+    -p|--product)    PRODUCT="${2}"; shift 2;;
+    -c|--command)    COMMAND="${2}"; shift 2;;
+    -t|--tag)        TAG="${2}"; shift 2;;
+    -j|--project)    PROJECT="${2}"; shift 2;;
+    -s|--serve)      SERVE=1; PORTS='-p 8000:8000'; shift 1;;
+    --)              shift ; break ;;
+    *)               print_incorrect_syntax "Invalid arguements in the call"; exit 1;;
   esac
 done
-
-# Ensure product is specified
-if [ -z ${PRODUCT} ]; then
-    print_incorrect_syntax "Product (-p) is mandatory"
-fi
 
 # Image
 IMAGE="ghcr.io/${PROJECT}/uyuni-docs-helper:${TAG}"
 
+# Command is mandatory
+if [ -z ${COMMAND} ]; then
+  print_incorrect_syntax "-c is mandatory"
+fi
+
+# Print a special error for the help command
+if [ "${COMMAND}" == "help" ]; then
+  if [ -z ${LOCALCLONE} ] && [ -z ${GITREPO} ]; then
+    print_incorrect_syntax "A source (a remote or local git repository) is needed for this."
+  # Define a default product, if none is available, so we can show the help
+  elif [ -z ${PRODUCT} ]; then
+    PRODUCT='mlm'
+  fi
+fi
+
+# Product is mandatory
+if [ -z ${PRODUCT} ]; then
+    print_incorrect_syntax "Product (-p) is mandatory"
+fi
+
+# Validate product selection
+VALID_PRODUCTS=("uyuni" "mlm" "suma")
+if [[ ! " ${VALID_PRODUCTS[@]} " =~ " ${PRODUCT} " ]]; then
+    print_error "Invalid product. Allowed: uyuni, mlm, suma"
+    exit 1
+fi
+
+# Check if the build fails
+if [ $? -ne 0 ]; then
+    print_error "Invalid product. Allowed: Master: uyuni, mlm | Non Master branches: uyuni, suma"
+    exit 1
+fi
+
+# Check command compatibility with the branch
+if [[ "${GITREF}" != "master" && "${PRODUCT}" == "mlm" ]]; then
+    print_error "Warning: The selected product '${PRODUCT}' may not be supported on this branch."
+fi
+
+# Check if SELinux is present and Enforcing
+if [ -f /etc/selinux/config ]; then
+  if [ selinuxenabled ]; then
+    print_info "Enabling SELinux flags for volume"
+    SELINUXMOUNT=':Z'
+  fi
+fi
+
+# Either a remote source or a local one must be used
+if [ -z ${LOCALCLONE} ]; then
+  SOURCE="-e GITREPO=${GITREPO} -e GITREF=${GITREF}"
+  if [ ! -z ${OUTPUT} ]; then
+    if [ ! -d ${OUTPUT} ]; then
+      print_error "${OUTPUT} is not a directory or does not exist"
+      exit 2
+    else
+      OUTPUT="$(get_dir_abs_path ${OUTPUT})"
+      SOURCE="${SOURCE} -v ${OUTPUT}:/tmp/output${SELINUXMOUNT} --userns=keep-id"
+      if [ "${COMMAND}" != "help" ]; then
+        print_info "Output will be stored at ${OUTPUT}/build"
+      fi
+      OUTDIR="${OUTPUT}/build"
+    fi
+  fi
+else
+  if [ ! -z ${OUTPUT} ]; then
+    print_incorrect_syntax "Using -o together with -l is invalid"
+  fi
+  if [ ! -d ${LOCALCLONE} ]; then
+    print_error "${LOCALCLONE} is not a directory or does not exist"
+    exit 2
+  elif [ ! -d ${LOCALCLONE}/.git ]; then
+    print_error "${LOCALCLONE} is not a Git repository"
+    exit 2
+  else
+    SOURCE="-v ${LOCALCLONE}:/tmp/uyuni-docs${SELINUXMOUNT} --userns=keep-id"
+    if [ "${COMMAND}" != "help" ]; then
+      print_info "Output will be stored at ${LOCALCLONE}/build"
+    fi
+    OUTDIR="${LOCALCLONE}/build"
+  fi
+fi
+
+# Guess the GitHub URL
+if [[ ! "${GITREPO}" =~ ^https:// ]]; then
+    GITREPO="https://github.com/${GITREPO}/uyuni-docs.git"
+fi
+
+if [ -z ${LOCALCLONE} ]; then
+  SOURCE="${SOURCE} -e GITREPO=${GITREPO} -e GITREF=${GITREF}"
+fi
+
 print_info "Pulling the latest container image ${IMAGE}..."
 podman pull ${IMAGE}
-
 if [ ${SERVE} -eq 1 ] && [ "${COMMAND}" != "help" ]; then
  print_info "The documentation will be served via HTTP. To stop the container when you are done, use CTRL+C"
 fi
-
 if [ "${COMMAND}" == "help" ]; then
   print_info "Showing the help..."
 else
-  print_info "Building the documentation..."
+  print_info "Bulding the doc..."
+fi
+podman run -ti --rm ${SOURCE} -e PRODUCT=${PRODUCT} -e COMMAND=${COMMAND} -e SERVE=${SERVE} ${PORTS} ${IMAGE}
+RET=${?}
+
+if [ ${RET} -eq 0 ]; then
+    if [ ! -z ${OUTDIR} ] && [ "${COMMAND}" != "help" ]; then
+        print_info "You can find find the build output at ${OUTDIR}"
+    fi
+else
+   print_error "There were errors! Please review the log!"
+   if [ ! -z ${OUTDIR} ] && [ "${COMMAND}" != "help" ]; then
+       print_error "Depending on the error, there could also be build outputs at ${OUTDIR}"
+   fi
 fi
 
-podman run -ti --rm -e GITREPO=${GITREPO} -e GITREF=${GITREF} -e PRODUCT=${PRODUCT} -e COMMAND=${COMMAND} ${IMAGE}
-RET=$?
-
-if [ ${RET} -ne 0 ]; then
-  print_error "Invalid product. Allowed: Master: uyuni, mlm | Non Master branches: uyuni, suma"
-  exit ${RET}
-fi
-
-print_info "Build completed successfully."
-exit 0
+exit ${RET}
