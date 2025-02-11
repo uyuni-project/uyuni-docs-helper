@@ -33,6 +33,15 @@ GITREPO='https://github.com/uyuni-project/uyuni-docs.git'
 # Default Git reference
 GITREF='master'
 
+# Possible products
+VALID_PRODUCTS=("uyuni" "mlm" "suma")
+VALID_PRODUCTS_LONG=("Uyuni" "SUSE Multi-Linux Manager" "SUSE Manager")
+
+# Do not modify
+VALID_PRODUCTS_COMMA=$(echo ${VALID_PRODUCTS[*]}|sed 's/ /, /g')
+VALID_PRODUCTS_PIPE=$(echo ${VALID_PRODUCTS[*]}|sed 's/ /|/g')
+VALID_PRODUCTS_LONG_COMMA=$(echo ${VALID_PRODUCTS_LONG[*]}|sed 's/ /, /g')
+
 # use gnu-getopt on macOS
 getopt_for_macos() {
   if [ "$(uname -s)" == 'Darwin' ]; then
