@@ -175,7 +175,7 @@ fi
 # Validate product selection
 VALID_PRODUCTS=("uyuni" "mlm" "suma")
 if [[ ! " ${VALID_PRODUCTS[@]} " =~ " ${PRODUCT} " ]]; then
-    print_error "Invalid product. Allowed: uyuni, mlm, suma"
+    print_error "Invalid product. Allowed: ${VALID_PRODUCTS_COMMA}"
     exit 1
 fi
 
