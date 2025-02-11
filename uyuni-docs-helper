@@ -122,7 +122,12 @@ if [ ${RET} -eq 0 ]; then
     INDEX_FILE=$(find ${OUTPUT_DIR} -name index.html | head -n 1)
     if [ -n "${INDEX_FILE}" ]; then
     if [ "${SERVE}" -eq 1 ]; then
+        if [ ! -d "${OUTPUT_DIR}/en" ]; then
+            print_error "Error: ${OUTPUT_DIR}/en/ does not exist. Ensure the build was successful before serving."
+            exit 1
+        fi
         print_info "Serving documentation at http://localhost:8000"
+        mkdir -p ${OUTPUT_DIR}/en/ && podman run -ti --rm -p 8000:8000 -v ${OUTPUT_DIR}/en/:/usr/share/nginx/html:ro -w /usr/share/nginx/html docker.io/library/nginx
     fi
 else
     print_error "index.html not found. Check if the build completed successfully and verify the build output at ${OUTPUT_DIR}"
