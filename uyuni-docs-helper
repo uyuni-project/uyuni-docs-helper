@@ -33,6 +33,15 @@ GITREPO='https://github.com/uyuni-project/uyuni-docs.git'
 # Default Git reference
 GITREF='master'
 
+# Possible products
+VALID_PRODUCTS=("uyuni" "mlm" "suma")
+VALID_PRODUCTS_LONG=("Uyuni" "SUSE Multi-Linux Manager" "SUSE Manager")
+
+# Do not modify
+VALID_PRODUCTS_COMMA=$(echo ${VALID_PRODUCTS[*]}|sed 's/ /, /g')
+VALID_PRODUCTS_PIPE=$(echo ${VALID_PRODUCTS[*]}|sed 's/ /|/g')
+VALID_PRODUCTS_LONG_COMMA=$(echo ${VALID_PRODUCTS_LONG[*]}|sed 's/ /, /g')
+
 # use gnu-getopt on macOS
 getopt_for_macos() {
   if [ "$(uname -s)" == 'Darwin' ]; then
@@ -83,7 +92,7 @@ print_help() {
   echo ""
   echo "Mandatory arguments:"
   echo ""
-  echo "-p|--product <uyuni|mlm>   Build the documentation for either Uyuni or SUSE Multi-Linux Manager"
+  echo "-p|--product <${VALID_PRODUCTS_PIPE}>   Build the documentation for ${VALID_PRODUCTS_LONG_COMMA}"
   echo "-c|--command <make command> Use the desired command to build html/pdf, html&pdf, etc..."
   echo "                            for example: 'all-uyuni'. You can use 'help' to list all"
   echo "                            possible commands. Be aware you still need to specify"
@@ -170,6 +179,13 @@ fi
 # Product is mandatory
 if [ -z ${PRODUCT} ]; then
     print_incorrect_syntax "Product (-p) is mandatory"
+fi
+
+# Validate product selection
+VALID_PRODUCTS=("uyuni" "mlm" "suma")
+if [[ ! " ${VALID_PRODUCTS[@]} " =~ " ${PRODUCT} " ]]; then
+    print_error "Invalid product. Allowed: ${VALID_PRODUCTS_COMMA}"
+    exit 1
 fi
 
 # Check if SELinux is present and Enforcing
