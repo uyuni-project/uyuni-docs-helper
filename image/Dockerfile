@@ -75,6 +75,10 @@ RUN cpan install Locale::gettext && \
     cpan install Term::ReadKey && \
     cpan install Unicode::GCString
 
+RUN sudo locale-gen ja_JP.UTF-8 zh_CN.UTF-8 ko_KR.UTF-8 && \
+    sudo update-locale && \
+    locale -a | grep -E "ja_JP|zh_CN|ko_KR"
+
 # Required python 3 libraries
 RUN zypper -q -n install python3-Jinja2 python3-PyYAML
 
