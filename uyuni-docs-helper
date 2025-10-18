@@ -45,7 +45,7 @@ VALID_PRODUCTS_LONG_COMMA=$(echo ${VALID_PRODUCTS_LONG[*]}|sed 's/ /, /g')
 # use gnu-getopt on macOS
 getopt_for_macos() {
   if [ "$(uname -s)" == 'Darwin' ]; then
-    if [ ! -f /usr/local/opt/gnu-getopt/bin/getopt ]; then
+    if [ ! -f /opt/homebrew/opt/gnu-getopt/bin/getopt ]; then
         if [ "${SHELL}" == "/usr/local/bin/fish" ]; then
           print_error "The fish shell is not supported (yet), please use bash or zsh for now"
           exit 1
