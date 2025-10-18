@@ -46,10 +46,6 @@ VALID_PRODUCTS_LONG_COMMA=$(echo ${VALID_PRODUCTS_LONG[*]}|sed 's/ /, /g')
 getopt_for_macos() {
   if [ "$(uname -s)" == 'Darwin' ]; then
     if [ ! -f /opt/homebrew/opt/gnu-getopt/bin/getopt ]; then
-        if [ "${SHELL}" == "/opt/homebrew/opt/fish" ]; then
-          print_error "The fish shell is not supported (yet), please use bash or zsh for now"
-          exit 1
-        fi
       print_error "Please install gnu-getopt via Homebrew with: brew install gnu-getopt"
       exit 1
     else
