@@ -1,4 +1,5 @@
 FROM opensuse/leap:16.0
+LABEL org.opencontainers.image.authors="jgonzalez@suse.com"
 
 ARG REGULARUSER=docs
 
@@ -10,23 +11,22 @@ ENV SERVE=0
 ENV GEM_HOME="${REGULARUSER}/gems"
 ENV PATH=$GEM_HOME/bin:$GEM_HOME/gems/bin:$PATH
 
+USER root
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-USER root
 RUN groupadd ${REGULARUSER} && \
     useradd -d /home/${REGULARUSER} -m ${REGULARUSER} -g ${REGULARUSER}
 
 # All instructions extracted from
 # https://github.com/uyuni-project/uyuni-docs/wiki/Install-the-latest-documentation-toolchain
 
-RUN zypper -q -n refresh
-RUN zypper -q -n update && zypper clean
-
-# Base requirements installable via patterns
-RUN zypper -q -n install -t pattern devel_C_C++ && zypper clean
-
-RUN zypper -q -n install \
-    # General requirements
+RUN zypper -q -n refresh && \
+    zypper -q -n update && \
+    # Base requirements installable via patterns
+    zypper -q -n install -t pattern devel_C_C++ && \
+    zypper -q -n install \
+    # Base requirements
     glibc-locale glibc-i18ndata git libyaml-devel readline-devel sqlite3-devel \
     # Python 3 and libraries
     python313-devel python3-Jinja2 python3-PyYAML \
@@ -44,7 +44,7 @@ USER ${REGULARUSER}
 
 # NVM and Node
 # see https://docs.antora.org/antora/latest/install/linux-requirements/
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash && \
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && \
     source ~/.bashrc && \
     nvm install --lts && \
     nvm use --lts
@@ -68,7 +68,8 @@ RUN cpan install Locale::gettext \
 RUN localedef -i ja_JP -f UTF-8 ja_JP.UTF-8 && \
     localedef -i zh_CN -f UTF-8 zh_CN.UTF-8 && \
     localedef -i ko_KR -f UTF-8 ko_KR.UTF-8 && \
-    locale -a | grep -E "ja_JP|zh_CN|ko_KR"
+    localedef -i en_US -f UTF-8 en_US.UTF-8 && \
+    locale -a | grep -E "ja_JP|zh_CN|ko_KR|en_US"
 
 COPY startup.sh /usr/local/bin/startup.sh
 
