@@ -1,0 +1,10 @@
+source 'https://rubygems.org'
+
+gem 'asciidoctor', '2.0.26'
+gem 'asciidoctor-diagram'
+gem 'asciidoctor-pdf', '2.3.24'
+gem 'coderay'
+gem 'concurrent-ruby'
+gem 'prawn-gmagick', '~>0.0.9'
+gem 'rb-pygments'
+gem 'rouge'

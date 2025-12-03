@@ -1,5 +1,5 @@
-FROM opensuse/leap:15.5
-MAINTAINER Julio Gonzalez Gil <jgonzalez@suse.com>
+FROM opensuse/leap:16.0
+LABEL org.opencontainers.image.authors="jgonzalez@suse.com"
 
 ARG REGULARUSER=docs
 
@@ -8,89 +8,83 @@ ENV GITREF=master
 ENV PRODUCT=uyuni
 ENV COMMAND=all-uyuni
 ENV SERVE=0
+ENV GEM_HOME="${REGULARUSER}/gems"
+ENV PATH=$GEM_HOME/bin:$GEM_HOME/gems/bin:$PATH
 
 USER root
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 RUN groupadd ${REGULARUSER} && \
-    useradd -d /home/${REGULARUSER} -m ${REGULARUSER}
+    useradd -d /home/${REGULARUSER} -m ${REGULARUSER} -g ${REGULARUSER}
 
 # All instructions extracted from
 # https://github.com/uyuni-project/uyuni-docs/wiki/Install-the-latest-documentation-toolchain
 
-# Base requirements
-RUN zypper -q -n ref && \
-    zypper -q -n in glibc-locale git gzip npm zip && \
-    zypper -q -n in -t pattern devel_C_C++ devel_python3 devel_perl
-
-# Install Ruby for building PDF’s
-RUN zypper -q -n in libyaml-devel sqlite3-devel readline-devel libopenssl-devel
+RUN zypper -q -n refresh && \
+    zypper -q -n update && \
+    # Base requirements installable via patterns
+    zypper -q -n install -t pattern devel_C_C++ && \
+    zypper -q -n install \
+    # Base requirements
+    glibc-locale glibc-i18ndata git libyaml-devel readline-devel sqlite3-devel \
+    # Python 3 and libraries
+    python313-devel python3-Jinja2 python3-PyYAML \
+    # Pearl
+    perl \
+    # Ruby 3 for building PDFs
+    libopenssl-devel ruby3.4 ruby3.4-devel ruby3.4-rubygem-bundler \
+    # GraphicsMagick
+    GraphicsMagick GraphicsMagick-devel \
+    # Po4a translation tools
+    po4a \
+    && zypper clean
 
 USER ${REGULARUSER}
 
-RUN git clone --depth 1 https://github.com/rbenv/rbenv.git ~/.rbenv && \
-    echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc && \
-    echo 'eval "$(rbenv init -)"' >> ~/.bashrc && \
-    source ~/.bashrc && \ 
-    git clone --depth 1 https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build && \
-    rbenv install 3.2.0 && \
-    rbenv global 3.2.0
-# End of Install Ruby for building PDF’s
-
 # NVM and Node
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash && \
+# see https://docs.antora.org/antora/latest/install/linux-requirements/
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && \
     source ~/.bashrc && \
     nvm install --lts && \
     nvm use --lts
-# End of NVM and Node
 
-# Antora 3.1 and Lunrjs extension
+# Antora 3.1, Asciidoctor and Lunr.js extension
 RUN source ~/.bashrc && \
-    npm i -g @antora/cli@3.1 @antora/site-generator@3.1 && \
-    npm i -g @antora/lunr-extension && \
-    npm i -g asciidoctor @asciidoctor/tabs
-# End of Antora 3.1 and Lunrjs extension
-
-USER ${REGULARUSER}
-# Asciidoctor
-RUN source ~/.bashrc && gem install asciidoctor -v 2.0.18
-
-# Asciidoctor-pdf
-RUN source ~/.bashrc && \
-    gem install asciidoctor-pdf -v 2.3.4 && \
-    gem install rouge coderay rb-pygments concurrent-ruby asciidoctor-diagram
+    npm install -g npm@latest \
+    @antora/cli@3.1 \
+    @antora/site-generator@3.1\
+    @antora/lunr-extension \
+    @asciidoctor/tabs
 
 USER root
-RUN zypper -q -n install GraphicsMagick GraphicsMagick-devel
+
+# Required Po4a Perl libraries
+RUN cpan install Locale::gettext \
+    Text::WrapI18N \
+    Term::ReadKey \
+    Unicode::GCString
+
+RUN localedef -i ja_JP -f UTF-8 ja_JP.UTF-8 && \
+    localedef -i zh_CN -f UTF-8 zh_CN.UTF-8 && \
+    localedef -i ko_KR -f UTF-8 ko_KR.UTF-8 && \
+    localedef -i en_US -f UTF-8 en_US.UTF-8 && \
+    locale -a | grep -E "ja_JP|zh_CN|ko_KR|en_US"
+
+COPY startup.sh /usr/local/bin/startup.sh
 
 USER ${REGULARUSER}
-RUN source ~/.bashrc && gem install prawn-gmagick -v 0.0.9
-# End of  Asciidoctor-pdf
 
-# Po4a translation tools
-USER root
-RUN zypper -q -n in po4a
-
-# Required po4a perl libraries
-RUN cpan install Locale::gettext && \
-    cpan install Text::WrapI18N && \
-    cpan install Term::ReadKey && \
-    cpan install Unicode::GCString
-
-RUN sudo locale-gen ja_JP.UTF-8 zh_CN.UTF-8 ko_KR.UTF-8 && \
-    sudo update-locale && \
-    locale -a | grep -E "ja_JP|zh_CN|ko_KR"
-
-# Required python 3 libraries
-RUN zypper -q -n install python3-Jinja2 python3-PyYAML
-
-ADD startup.sh /usr/local/bin/startup.sh
-
-USER ${REGULARUSER}
+# Install Ruby gems
+COPY Gemfile /home/${REGULARUSER}/Gemfile
+WORKDIR /home/${REGULARUSER}
+RUN bundle install
 
 # Set locale
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US
+ENV LC_ALL=en_US.UTF-8
 
 EXPOSE 8000
 WORKDIR /home/docs
-CMD /usr/local/bin/startup.sh
+CMD ["/usr/local/bin/startup.sh"]
