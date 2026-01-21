@@ -29,7 +29,7 @@ RUN zypper -q -n refresh && \
     # Base requirements
     glibc-locale glibc-i18ndata git libyaml-devel readline-devel sqlite3-devel \
     # Python 3 and libraries
-    python313-devel python3-Jinja2 python3-PyYAML \
+    python313-devel python313-Jinja2 python313-PyYAML \
     # Pearl
     perl \
     # Ruby 3 for building PDFs
