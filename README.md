@@ -19,6 +19,7 @@ This a result of [SUSE's Hack Week 22](https://hackweek.opensuse.org/22/projects
 
 - `image` directory: Contains the Dockerfile, the `startup.sh` script for the container, and the `build-locally` helper (that can be used to build the container locally for testing, passing arguments to the build, such as `--no-cache` is allowed). See below for more details
 - `.github/workflows`: Contains the `build-and-publish-container-images.yml` workflow definition to build and publish the image to the GitHub Container registry after each change on the repository
+- build targets are `x86_64` (`amd64`) and `arm64`
 
 # Requirements
 
