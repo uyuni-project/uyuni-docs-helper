@@ -8,8 +8,8 @@ ENV GITREF=master
 ENV PRODUCT=uyuni
 ENV COMMAND=all-uyuni
 ENV SERVE=0
-ENV GEM_HOME="${REGULARUSER}/gems"
-ENV PATH=$GEM_HOME/bin:$GEM_HOME/gems/bin:$PATH
+ENV GEM_HOME="/home/${REGULARUSER}/gems"
+ENV PATH=$GEM_HOME/bin:$PATH
 
 USER root
 
@@ -27,10 +27,10 @@ RUN zypper -q -n refresh && \
     zypper -q -n install -t pattern devel_C_C++ && \
     zypper -q -n install \
     # Base requirements
-    glibc-locale glibc-i18ndata git libyaml-devel readline-devel sqlite3-devel \
+    glibc-locale-base glibc-locale glibc-i18ndata git libyaml-devel readline-devel sqlite3-devel zip \
     # Python 3 and libraries
     python313-devel python313-Jinja2 python313-PyYAML \
-    # Pearl
+    # Perl
     perl \
     # Ruby 3 for building PDFs
     libopenssl-devel ruby3.4 ruby3.4-devel ruby3.4-rubygem-bundler \
@@ -53,7 +53,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | b
 RUN source ~/.bashrc && \
     npm install -g npm@latest \
     @antora/cli@3.1 \
-    @antora/site-generator@3.1\
+    @antora/site-generator@3.1 \
     @antora/lunr-extension \
     @asciidoctor/tabs
 
@@ -69,7 +69,8 @@ RUN localedef -i ja_JP -f UTF-8 ja_JP.UTF-8 && \
     localedef -i zh_CN -f UTF-8 zh_CN.UTF-8 && \
     localedef -i ko_KR -f UTF-8 ko_KR.UTF-8 && \
     localedef -i en_US -f UTF-8 en_US.UTF-8 && \
-    locale -a | grep -E "ja_JP|zh_CN|ko_KR|en_US"
+    localedef -i en_US -f UTF-8 en && \
+    locale -a | grep -E "ja_JP|zh_CN|ko_KR|en_US|en"
 
 COPY startup.sh /usr/local/bin/startup.sh
 
@@ -86,5 +87,5 @@ ENV LANGUAGE=en_US
 ENV LC_ALL=en_US.UTF-8
 
 EXPOSE 8000
-WORKDIR /home/docs
+WORKDIR /home/${REGULARUSER}
 CMD ["/usr/local/bin/startup.sh"]
