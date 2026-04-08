@@ -1,19 +1,8 @@
-source 'https://rubygems.org'
-
-gem 'asciidoctor', '2.0.26'
-gem 'asciidoctor-diagram'
-gem 'asciidoctor-pdf', '2.3.24'
-gem 'coderay'
-gem 'concurrent-ruby'
-gem 'prawn-gmagick', '~>0.0.9'
-gem 'rb-pygments'
-gem 'rouge'
-@:/home/docs> cat Gemfile.lock
 GEM
   remote: https://rubygems.org/
   specs:
     Ascii85 (2.0.1)
-    addressable (2.8.8)
+    addressable (2.9.0)
       public_suffix (>= 2.0.2, < 8.0)
     afm (1.0.0)
     asciidoctor (2.0.26)
@@ -62,7 +51,7 @@ GEM
     prawn-templates (0.1.2)
       pdf-reader (~> 2.0)
       prawn (~> 2.2)
-    public_suffix (7.0.0)
+    public_suffix (7.0.5)
     rb-pygments (0.1.0)
     rexml (3.4.4)
     rouge (4.6.1)
