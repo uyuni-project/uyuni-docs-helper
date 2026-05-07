@@ -1,4 +1,4 @@
-FROM opensuse/leap:16.0
+FROM opensuse/leap:16.0@sha256:859560554b625c225fa767b76d61253d529b95d082c2d68579ad69168d5e3da7
 LABEL org.opencontainers.image.authors="jgonzalez@suse.com"
 
 ARG REGULARUSER=docs
@@ -44,14 +44,20 @@ USER ${REGULARUSER}
 
 # NVM and Node
 # see https://docs.antora.org/antora/latest/install/linux-requirements/
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && \
+# renovate: datasource=github-releases depName=nvm-sh/nvm
+ARG NVM_VERSION=v0.40.3
+ARG NVM_INSTALL_SHA256=2d8359a64a3cb07c02389ad88ceecd43f2fa469c06104f92f98df5b6f315275f
+RUN curl -sL -o /tmp/nvm-install.sh "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" && \
+    echo "${NVM_INSTALL_SHA256}  /tmp/nvm-install.sh" | sha256sum -c - && \
+    bash /tmp/nvm-install.sh && \
+    rm -f /tmp/nvm-install.sh && \
     source ~/.bashrc && \
     nvm install --lts && \
     nvm use --lts
 
 # Antora 3.1, Asciidoctor and Lunr.js extension
 RUN source ~/.bashrc && \
-    npm install -g npm@latest \
+    npm install -g npm@11.4.1 \
     @antora/cli@3.1 \
     @antora/site-generator@3.1 \
     @antora/lunr-extension \
