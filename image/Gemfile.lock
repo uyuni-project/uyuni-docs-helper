@@ -22,7 +22,7 @@ GEM
       ttfunk (~> 1.7.0)
     coderay (1.1.3)
     concurrent-ruby (1.3.5)
-    css_parser (1.21.1)
+    css_parser (1.22.0)
       addressable
     hashery (2.1.2)
     matrix (0.4.3)
