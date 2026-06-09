@@ -1,10 +1,26 @@
 # Repository purpose
 
-To provide a way of building a container image to build the [Uyuni documentation](https://github.com/uyuni-project/uyuni-docs), as it requires to install a big set of tools using `zypper`, `nvm`, `cpan`, `gem` etc.
+To provide a way of building a container image to build the [Uyuni documentation](https://github.com/uyuni-project/uyuni-docs) for the legacy documentation branches that still use this helper.
 
 Besides the container, a helper is provider so people that does not know anything about containers can easily use them.
 
 This a result of [SUSE's Hack Week 22](https://hackweek.opensuse.org/22/projects/testing-gnu-slash-linux-distributions-on-uyuni)
+
+# Which toolchain to use
+
+The `uyuni-docs` repository has moved to the new `task` + `make` toolchain for current development branches.
+
+- `master`: use the new toolchain in `uyuni-docs`
+- `manager-5.1`: use the new toolchain in `uyuni-docs`
+- `manager-5.0`: use `uyuni-docs-helper`
+- `manager-4.3`: use `uyuni-docs-helper`
+
+Uyuni is built from `master`, so Uyuni documentation builds also use the new `task` toolchain.
+
+For the new workflow, use the setup guides in `uyuni-docs`:
+
+- [Container Build Setup](https://github.com/uyuni-project/uyuni-docs/blob/master/docs/container-setup.md)
+- [Local Toolchain Setup](https://github.com/uyuni-project/uyuni-docs/blob/master/docs/local-toolchain-setup.md)
 
 # Repository structure
 
@@ -13,7 +29,9 @@ This a result of [SUSE's Hack Week 22](https://hackweek.opensuse.org/22/projects
 
 ### Example
 
-`./uyuni-docs-helper -r master -o /tmp/test -c obs-packages-mlm-en -p mlm` would build the HTML and PDFs for English language, from the `master` branch at https://github.com/uyuni-project/uyuni-docs (default repository), for SUSE Multi-Linux Manager.
+`./uyuni-docs-helper -r manager-5.0 -o /tmp/test -c obs-packages-mlm-en -p mlm` would build the HTML and PDFs for English language, from the `manager-5.0` branch at https://github.com/uyuni-project/uyuni-docs (default repository), for SUSE Multi-Linux Manager.
+
+Do not use this helper for `master` or `manager-5.1`; those branches now use the upstream `task`-based toolchain documented above.
 
 ## For image maintainers
 
